@@ -148,7 +148,14 @@ module Arel
           groups = projections.map { |x| projection_without_expression(x) }
           orders = orders.map do |x|
             expr = Arel.sql projection_without_expression(x.expr)
-            x.descending? ? Arel::Nodes::Max.new([expr]) : Arel::Nodes::Min.new([expr])
+
+            if x.descending?
+              Arel::Nodes::Max.new([expr])
+              groups += [expr]
+              Arel::Nodes::Descending.new([expr])
+            else
+              Arel::Nodes::Min.new([expr])
+            end
           end
         elsif top_one_everything_for_through_join?(o)
           projections = projections.map { |x| projection_without_expression(x) }
